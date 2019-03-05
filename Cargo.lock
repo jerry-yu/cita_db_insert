@@ -1,4 +1,4 @@
 [[package]]
-name = "cita_kv_insert"
+name = "cita_db_insert"
 version = "0.1.0"
 
