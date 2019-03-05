@@ -52,6 +52,7 @@ fn main() {
         .args_from_usage("-p, --previos=[NUMBER] 'Sets the previous height for insert'")
         .args_from_usage("-t, --time=[NUMBER] 'delay insert in ms' ")
         .args_from_usage("-d, --data=[PATH] 'Set data dir'")
+        .args_from_usage("-g, --target=[NUMBER] 'Set rocksdb memory_budget'")
         .get_matches();
 
     let hi = matches
@@ -66,14 +67,21 @@ fn main() {
         .to_string()
         .parse::<u64>()
         .unwrap_or(3000);
+    let mem_limit = matches
+        .value_of("target")
+        .unwrap_or("1024")
+        .to_string()
+        .parse::<usize>()
+        .unwrap_or(1024);
+
     let data_path = matches.value_of("data").unwrap_or("./data");
 
     let mut database_config = DatabaseConfig::with_columns(db::NUM_COLUMNS);
-    database_config.memory_budget = Some(1024);
+    database_config.memory_budget = Some(mem_limit);
     let chain_db = Database::open(&database_config, &*data_path).expect("DB dir not right");
 
     for i in 0..hi {
-        if i % 10000 == 0 {
+        if i % 100000 == 0 {
             println!("speed mode,now height {:?}", i);
         }
         write_transaction(&chain_db, i as u64);
