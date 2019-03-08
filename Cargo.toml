@@ -14,3 +14,4 @@ proof = { git = "https://github.com/cryptape/cita-common.git", branch = "develop
 kvdb-rocksdb = "0.1.4"
 rlp = { git = "https://github.com/cryptape/cita-common.git", branch = "develop" }
 libproto = { git = "https://github.com/cryptape/cita-common.git", branch = "develop" }
+rand = "0.6.5"

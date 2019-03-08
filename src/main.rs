@@ -6,6 +6,7 @@ extern crate kvdb_rocksdb as cita_db;
 extern crate libproto;
 extern crate log;
 extern crate proof;
+extern crate rand;
 extern crate rlp;
 
 use cita_db::{Database, DatabaseConfig};
@@ -15,6 +16,7 @@ use clap::App;
 //use types::header::*;
 use std::time::Duration;
 use types::db;
+//use rand::prelude::*;
 //use types::db::Key;
 
 fn write_transaction(db: &Database, height: u64) {
@@ -53,6 +55,7 @@ fn main() {
         .args_from_usage("-t, --time=[NUMBER] 'delay insert in ms' ")
         .args_from_usage("-d, --data=[PATH] 'Set data dir'")
         .args_from_usage("-g, --target=[NUMBER] 'Set rocksdb memory_budget'")
+        .args_from_usage("-s, --start=[NUMBER] 'Set start height'")
         .get_matches();
 
     let hi = matches
@@ -71,23 +74,30 @@ fn main() {
         .value_of("target")
         .unwrap_or("1024")
         .to_string()
-        .parse::<usize>()
+        .parse::<u64>()
         .unwrap_or(1024);
+    let start_height = matches
+        .value_of("start")
+        .unwrap_or("0")
+        .to_string()
+        .parse::<u64>()
+        .unwrap_or(0);
 
     let data_path = matches.value_of("data").unwrap_or("./data");
 
     let mut database_config = DatabaseConfig::with_columns(db::NUM_COLUMNS);
-    database_config.memory_budget = Some(mem_limit);
+    database_config.memory_budget = Some(mem_limit as usize);
     let chain_db = Database::open(&database_config, &*data_path).expect("DB dir not right");
 
-    for i in 0..hi {
+    for i in start_height..start_height + hi {
         if i % 100000 == 0 {
             println!("speed mode,now height {:?}", i);
         }
-        write_transaction(&chain_db, i as u64);
+        let height = i; //rand::thread_rng().gen();
+        write_transaction(&chain_db, height);
     }
 
-    let mut hi = hi as u64;
+    let mut hi = (start_height + hi) as u64;
     loop {
         hi += 1;
         write_transaction(&chain_db, hi);
